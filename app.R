@@ -275,10 +275,10 @@ server <- function(input, output, session) {
     DF_sub = DF_in[,indicators$Name[indicators$Group==sub_sector]]
     if(sub_sector2!="All"){
       DF_sub = DF_sub[,indicators$Name[indicators$Name==sub_sector2]]
-      DF_sub = cbind(DF['Sector'],data.frame(sub_sector2=DF_sub))
+      DF_sub = cbind(DF_in['Sector'],data.frame(sub_sector2=DF_sub))
       colnames(DF_sub)[2] = sub_sector2
     } else{
-      DF_sub = cbind(DF['Sector'],DF_sub)
+      DF_sub = cbind(DF_in['Sector'],DF_sub)
     }
     DF_sectors = sector_DF[c("Code","Name")]
     DF_sectors$Code = paste0(DF_sectors$Code,"/US")
@@ -325,6 +325,7 @@ server <- function(input, output, session) {
   amount_output <- function(sec1,val1,sec2="1111A0",val2=0,sec3="1111A0",val3=0,sec4="1111A0",val4=0,sec5="1111A0",val5=0,sec6="1111A0",val6=0,sec7="1111A0",val7=0,sec8="1111A0",val8=0){
     demand_df = update_demand(sec1,val1,sec2,val2,sec3,val3,sec4,val4,sec5,val5,sec6,val6,sec7,val7,sec8,val8)
     demand_df = demand_df[demand_df!=0]
+    demand_df = demand_df/1000000
     paste0("$",demand_df," million")   
   }
   
@@ -421,11 +422,9 @@ server <- function(input, output, session) {
     if(input$select_sub_group=="All"){
       a = indicators$Name[indicators$Group==input$select_group]
       a = c(a, "Total")
-      DF %>% mutate(across(all_of(a), ~format(., big.mark = ",", decimal.mark = ".", scientific = FALSE)))
-    } else{
-      DF
-    }
-    
+      DF=DF %>% mutate(across(all_of(a), ~format(., big.mark = ",", decimal.mark = ".", scientific = FALSE)))
+    } 
+    DF
     # datatable(DF, options=list(pageLength=35, rownames=FALSE))
   })
   output$downloadGroupData <- downloadHandler(
